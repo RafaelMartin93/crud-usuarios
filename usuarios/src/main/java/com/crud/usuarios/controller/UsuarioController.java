@@ -7,6 +7,7 @@ import java.util.Map;
 import org.hibernate.service.spi.ServiceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.crud.usuarios.dto.UsuarioDTO;
 import com.crud.usuarios.enity.Usuario;
 import com.crud.usuarios.service.UsuarioService;
+import com.crud.usuarios.utils.Utils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -44,6 +46,11 @@ public class UsuarioController {
     @PostMapping
     public ResponseEntity<?> createUsuario(@RequestBody UsuarioDTO usuario) {
         try {
+            if (!Utils.isValidEmail(usuario.getEmail()))
+                return ResponseEntity
+                        .status(HttpStatus.CONFLICT)
+                        .body("El email introducido no es correcto " + usuario.getEmail());
+
             Usuario existeUsuario = usuarioService.findByEmail(usuario.getEmail());
             if (existeUsuario == null) {
                 Usuario nuevoUsuario = usuarioService.createUsuario(usuario);
@@ -65,6 +72,16 @@ public class UsuarioController {
         Usuario usuario = new Usuario();
         usuario = usuarioService.findByEmail(email);
         return usuario;
+    }
+
+    @DeleteMapping
+    public ResponseEntity<String> deleteUsuario(@RequestBody String jsonBody) {
+        String email = Utils.extractEmailWithGson(jsonBody);
+        Usuario existeUsuario = usuarioService.findByEmail(email);
+        if (existeUsuario == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+        usuarioService.deleteUsuarioByEmail(existeUsuario.getEmail());
+        return ResponseEntity.ok("¡Usuario eliminado exitosamente!");
     }
 
 }

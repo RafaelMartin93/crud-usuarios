@@ -1,6 +1,8 @@
 package com.crud.usuarios.service;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import org.hibernate.service.spi.ServiceException;
 import org.springframework.stereotype.Service;
@@ -37,7 +39,15 @@ public class UsuarioService {
     public Usuario findByEmail(String email) throws ServiceException{
         return usuarioRepository.findByEmail(email);
     }
+    
+    @Transactional
+    public void deleteUsuarioByEmail(String email) throws ServiceException{
+        usuarioRepository.deleteByEmail(email);
+    }
 
+    public Optional<Usuario> findById(UUID id) throws ServiceException{
+        return usuarioRepository.findById(id);
+    }
 
 
 }
